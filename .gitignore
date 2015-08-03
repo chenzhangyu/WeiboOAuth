@@ -1,0 +1,7 @@
+*.pyc
+*.swp
+setting.py
+venv/
+.idea/
+rsync.sh
+.exclude
