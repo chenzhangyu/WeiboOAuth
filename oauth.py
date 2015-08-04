@@ -16,7 +16,7 @@ class OauthError(Exception):
 
 def _on_access_token(future, response):
     if response.error:
-        future.set_exception(OauthError('Google auth error: %s' % str(response)))
+        future.set_exception(OauthError('Auth error: %s' % str(response)))
         return
 
     args = escape.json_decode(response.body)
