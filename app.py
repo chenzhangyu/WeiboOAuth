@@ -12,11 +12,13 @@ from tornado.options import options, define
 from tornado.log import access_log as logger
 from base import BaseHandler
 
-# from oauth_handler.handler import OauthHandler
-# from oauth_handler.handler import FetchPersonalInfo as UserInfoHandler
+# tornado.auth implementation
+from oauth_handler.handler import OauthHandler
+from oauth_handler.handler import FetchPersonalInfo as UserInfoHandler
 
-from sdk_handler.handler import OauthSDKHandler as OauthHandler
-from sdk_handler.handler import FetchUserInfoSDKHandler as UserInfoHandler
+# SDK implementation
+# from sdk_handler.handler import OauthSDKHandler as OauthHandler
+# from sdk_handler.handler import FetchUserInfoSDKHandler as UserInfoHandler
 
 logger.setLevel(logging.DEBUG)
 
