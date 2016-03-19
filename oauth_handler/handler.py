@@ -1,18 +1,18 @@
 # encoding=utf-8
 __author__ = 'lance'
 
+import json
 import uuid
 import time
-import tornado.gen
 
+import tornado.gen
 from tornado.options import options
 from tornado.httputil import url_concat
 from tornado.httpclient import AsyncHTTPClient
 from tornado.log import access_log as logger
 
-
-from .oauth import WeiboOauth2Mixin
 from base import BaseHandler
+from oauth_handler.oauth import WeiboOauth2Mixin
 
 
 class OauthHandler(BaseHandler, WeiboOauth2Mixin):
@@ -27,6 +27,7 @@ class OauthHandler(BaseHandler, WeiboOauth2Mixin):
             # check state
             if self.get_argument("state") != self.get_secure_cookie("oauth_state"):
                 raise tornado.web.HTTPError(403)
+
             # fetch access token
             user = yield self.get_authenticated_user(
                 redirect_uri=options.callback_url,
@@ -34,17 +35,21 @@ class OauthHandler(BaseHandler, WeiboOauth2Mixin):
             logger.debug("access_token %s" % user["access_token"])
             logger.debug("expires_in %s" % user["expires_in"])
             logger.debug("uid %s" % user["uid"])
+
             # save access_token, expires etc.
             self.set_secure_cookie("access_token", user["access_token"])
             self.set_secure_cookie("expires_time", str(user["expires_in"] + int(time.time())))
             self.set_secure_cookie("uid", user["uid"])
-            self.write(str(user))
+            self.write(user)
+
         # generate authorization url and redirect
         else:
             oauth_state = str(uuid.uuid4())
             logger.debug(oauth_state)
+
             # save state
             self.set_secure_cookie("oauth_state", oauth_state)
+
             # csrf, force login
             yield self.authorize_redirect(
                 client_id=options.app_key,
@@ -61,6 +66,7 @@ class FetchPersonalInfo(BaseHandler):
         access_token = self.get_secure_cookie("access_token")
         expires = self.get_secure_cookie("expires_time")
         uid = self.get_secure_cookie("uid")
+
         # validate access_token
         if access_token and expires and uid and expires > int(time.time()):
             http_client = AsyncHTTPClient()
@@ -69,6 +75,7 @@ class FetchPersonalInfo(BaseHandler):
                              dict(access_token=access_token, uid=uid))
             response = yield http_client.fetch(url)
             logger.debug(response.body)
-            self.write(str(response.body))
+            r = json.loads(response.body)
+            self.write(r)
         else:
             raise tornado.web.HTTPError(403)

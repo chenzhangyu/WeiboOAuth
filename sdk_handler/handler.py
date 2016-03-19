@@ -2,11 +2,13 @@
 __author__ = 'lance'
 
 import uuid
-import tornado.web
 
+import tornado.web
 from tornado.options import options
+
 from weibo import APIClient
 from base import BaseHandler
+
 
 client = APIClient(app_key=options.app_key, app_secret=options.app_secret,
                    redirect_uri=options.callback_url)
@@ -18,6 +20,7 @@ class OauthSDKHandler(BaseHandler):
     """
     def get(self):
         code = self.get_argument("code", default=None)
+
         if not code:
             oauth_state = str(uuid.uuid4())
             self.set_secure_cookie("oauth_state", oauth_state)
@@ -25,14 +28,16 @@ class OauthSDKHandler(BaseHandler):
         else:
             if self.get_argument("state") != self.get_secure_cookie("oauth_state"):
                 raise tornado.web.HTTPError(403)
+
             # get access_token
             r = client.request_access_token(code)
+
             # save access_token
             access_token, expires_in, uid = r.access_token, r.expires_in, r.uid
             self.set_secure_cookie("access_token", access_token)
             self.set_secure_cookie("expires_in", str(expires_in))
             self.set_secure_cookie("uid", str(uid))
-            self.write(str(r))
+            self.write(r)
 
 
 class FetchUserInfoSDKHandler(BaseHandler):

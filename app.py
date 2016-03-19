@@ -8,7 +8,7 @@ import tornado.gen
 import tornado.log
 
 from setting import setting
-from tornado.options import options, define
+from tornado.options import options
 from tornado.log import access_log as logger
 from base import BaseHandler
 
@@ -31,7 +31,6 @@ class MainHandler(BaseHandler):
     """
 
     def get(self):
-        # self.render("index.html", oauth_url=options.oauth_url)
         self.render("index.html", oauth_url="/oauth")
 
 if __name__ == "__main__":
